@@ -26,8 +26,6 @@ const H_POSITIONS = [
   { side: 'right', left: undefined,                     right: '18%'     },         // 3 close-right
 ] as const
 
-const R_FRONT    = 34
-const R_BACK     = 22
 
 const COLOR_A = '#22D3EE'   // cyan
 const COLOR_B = '#A855F7'   // violet
@@ -81,20 +79,6 @@ function cardColor(i: number): string {
 }
 
 // ─── Gradients sphère 3D ─────────────────────────────────────────────────────────
-function sphereGradient(id: string, color: string, front: boolean) {
-  const lp = (h: string, s: number) => parseInt(h.slice(s, s+2), 16)
-  const li = (h: string, a: number) => `rgb(${Math.min(255,lp(h,1)+a)},${Math.min(255,lp(h,3)+a)},${Math.min(255,lp(h,5)+a)})`
-  const da = (h: string, a: number) => `rgb(${Math.max(0,lp(h,1)-a)},${Math.max(0,lp(h,3)-a)},${Math.max(0,lp(h,5)-a)})`
-  const op = front ? 1 : 0.8
-  return (
-    <radialGradient key={id} id={id} cx="32%" cy="26%" r="70%" gradientUnits="objectBoundingBox">
-      <stop offset="0%"   stopColor={li(color, 80)} stopOpacity={op} />
-      <stop offset="30%"  stopColor={li(color, 30)} stopOpacity={op} />
-      <stop offset="70%"  stopColor={color}         stopOpacity={op} />
-      <stop offset="100%" stopColor={da(color, 70)} stopOpacity={op} />
-    </radialGradient>
-  )
-}
 
 // ─── Types ────────────────────────────────────────────────────────────────────────
 interface GalleryItem { src: string; label: string }
@@ -136,14 +120,7 @@ export default function GalleryGrid({ items, onOpen }: Props) {
 
   const data = useMemo(() => buildData(phase), [phase])
 
-  const renderSpheres = useMemo(() => {
-    const all: { x: number; y: number; colorIdx: number; isFront: boolean }[] = []
-    data.forEach((d, i) => {
-      all.push({ x: d.xA, y: d.y, colorIdx: i % 3, isFront: d.sinVal > 0  })
-      all.push({ x: d.xB, y: d.y, colorIdx: i % 3, isFront: d.sinVal <= 0 })
-    })
-    return all.sort((a, b) => (a.isFront ? 1 : -1) - (b.isFront ? 1 : -1))
-  }, [data])
+
 
   return (
     <div className="relative" style={{ height: TOTAL_H, width: '100%' }}>
