@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Ruwudu:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -80,7 +80,100 @@ body {
 .blob2 { animation: blob2 15s ease-in-out infinite; }
 .blob3 { animation: blob3 10s ease-in-out infinite; }
 
-/* Réduit les animations si préférence */
+/* Glow néon carousel — style spray tag */
+@keyframes glow-spray {
+  0%   { box-shadow: 0 0 25px 6px #ff6b00aa, 0 0 60px 18px #ff6b0033; }
+  16%  { box-shadow: 0 0 25px 6px #00d4ffaa, 0 0 60px 18px #00d4ff33; }
+  33%  { box-shadow: 0 0 25px 6px #ff2d78aa, 0 0 60px 18px #ff2d7833; }
+  50%  { box-shadow: 0 0 25px 6px #b44fffaa, 0 0 60px 18px #b44fff33; }
+  66%  { box-shadow: 0 0 25px 6px #f5c400aa, 0 0 60px 18px #f5c40033; }
+  83%  { box-shadow: 0 0 25px 6px #39ff14aa, 0 0 60px 18px #39ff1433; }
+  100% { box-shadow: 0 0 25px 6px #ff6b00aa, 0 0 60px 18px #ff6b0033; }
+}
+
+.glow-spray {
+  animation: glow-spray 6s ease-in-out infinite;
+}
+
+/* ─── HERO TITLE ────────────────────────────────────── */
+
+/* Entrée lettre par lettre */
+@keyframes letter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(70px) rotateX(50deg) skewX(-8deg);
+    filter: blur(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg) skewX(0deg);
+    filter: blur(0px);
+  }
+}
+
+.hero-letter {
+  display: inline-block;
+  animation: letter-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Float doux sur le titre entier */
+@keyframes title-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-14px); }
+}
+
+.hero-title-float {
+  display: inline-block;
+  animation: title-float 7s ease-in-out infinite;
+  /* on diffère le float après l'entrée */
+  animation-delay: 1.2s;
+}
+
+/* ─── IC — CYCLE COULEURS ───────────────────────────── */
+
+/* Gradient en mouvement continu */
+@keyframes ic-cycle {
+  from { background-position: 0% center; }
+  to   { background-position: 600% center; }
+}
+
+/* Glow qui change de couleur en parallèle */
+@keyframes ic-glow-cycle {
+  0%   { filter: blur(50px) opacity(0.7); background-position: 0% center; }
+  100% { filter: blur(50px) opacity(0.7); background-position: 600% center; }
+}
+
+.ic-text {
+  background: linear-gradient(
+    270deg,
+    #ff6b00, #f5c400, #39ff14, #00d4ff,
+    #1e90ff, #b44fff, #ff2d78, #ff6b00
+  );
+  background-size: 600% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: ic-cycle 10s linear infinite;
+}
+
+/* Couche de glow derrière le IC */
+.ic-glow-layer {
+  position: absolute;
+  inset: -20% -10%;
+  background: linear-gradient(
+    270deg,
+    #ff6b00, #f5c400, #39ff14, #00d4ff,
+    #1e90ff, #b44fff, #ff2d78, #ff6b00
+  );
+  background-size: 600% auto;
+  animation: ic-cycle 10s linear infinite;
+  filter: blur(55px);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Réduit les animations si préférence */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
