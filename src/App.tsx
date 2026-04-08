@@ -139,8 +139,8 @@ export default function App() {
         </section>
 
         {/* GALERIE — GRILLE 3D */}
-        <section id="galerie" className="relative py-24 px-5 overflow-hidden">
-          <div className="relative z-10 max-w-6xl mx-auto">
+        <section id="galerie" className="relative py-24 px-5" style={{ overflowX: 'clip' }}>
+          <div className="relative z-10">
             <div className="text-center mb-16">
               <p className="text-xs tracking-[0.4em] uppercase text-spray-cyan mb-3">Réalisations</p>
               <h2 className="font-display text-5xl md:text-6xl text-white tracking-wider">GALERIE</h2>

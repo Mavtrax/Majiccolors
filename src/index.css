@@ -173,6 +173,26 @@ body {
   z-index: 0;
 }
 
+/* ─── Particules étoiles ── */
+@keyframes twinkle {
+  0%   { opacity: 0.1;  transform: scale(0.6); }
+  40%  { opacity: 1;    transform: scale(1.3); }
+  60%  { opacity: 0.8;  transform: scale(1.1); }
+  100% { opacity: 0.1;  transform: scale(0.6); }
+}
+
+/* ─── Lévitation cartes galerie ── */
+@keyframes levitate {
+  0%   { transform: translateY(0px)    rotate(-0.5deg); }
+  30%  { transform: translateY(-10px)  rotate(0.3deg);  }
+  60%  { transform: translateY(-5px)   rotate(-0.2deg); }
+  100% { transform: translateY(0px)    rotate(-0.5deg); }
+}
+
+.card-levitate {
+  animation: levitate 4s ease-in-out infinite;
+}
+
 /* ─── Réduit les animations si préférence */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
