@@ -1,18 +1,22 @@
 import { useEffect, useRef, useState, useMemo } from 'react'
 
+// ─── Détection mobile ──────────────────────────────────────────────────────────
+const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 768
+
 // ─── Constants ─────────────────────────────────────────────────────────────────
 const N_ITEMS    = 9
-const V_STEP     = 420                       // décalage vertical entre chaque image
+const V_STEP     = 420
 const PAD_TOP    = 60
 const TOTAL_H    = PAD_TOP + N_ITEMS * V_STEP + 100
 
 const SVG_W      = 480
 const CX         = SVG_W / 2
 const AMPLITUDE  = 300
-const N_SPHERES  = 52
+const N_SPHERES_DESKTOP = 52
+const N_SPHERES_MOBILE  = 18
 const TURNS      = 4.5
 const SCROLL_F   = 0.002
-const AUTO_SPEED = 0.004
+const AUTO_SPEED = 0.004   // desktop seulement
 
 const CARD_W     = 560
 const CARD_H     = 400
@@ -54,7 +58,7 @@ const STARS = Array.from({ length: 55 }, (_, i) => {
 // ─── Hélice ──────────────────────────────────────────────────────────────────────
 interface SphereData { xA: number; xB: number; y: number; sinVal: number }
 
-function buildData(phase: number): SphereData[] {
+function buildData(phase: number, N_SPHERES = N_SPHERES_DESKTOP): SphereData[] {
   return Array.from({ length: N_SPHERES }, (_, i) => {
     const prog   = i / (N_SPHERES - 1)
     const t      = prog * TURNS * 2 * Math.PI
@@ -89,11 +93,26 @@ export default function GalleryGrid({ items, onOpen }: Props) {
   const [phase,      setPhase     ] = useState(0)
   const [visible,    setVisible   ] = useState<boolean[]>(() => new Array(items.length).fill(false))
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
+  const [mobile,     setMobile    ] = useState(false)
   const cardRefs  = useRef<(HTMLDivElement | null)[]>([])
   const autoPhase = useRef(0)
   const scrollOff = useRef(0)
 
   useEffect(() => {
+    const check = () => setMobile(isMobile())
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  useEffect(() => {
+    // Mobile : pas de RAF, juste scroll lent
+    if (mobile) {
+      const onScroll = () => setPhase(window.scrollY * SCROLL_F * 0.5)
+      window.addEventListener('scroll', onScroll, { passive: true })
+      return () => window.removeEventListener('scroll', onScroll)
+    }
+    // Desktop : rotation auto + scroll
     let rafId: number
     const loop = () => {
       autoPhase.current += AUTO_SPEED
@@ -104,7 +123,7 @@ export default function GalleryGrid({ items, onOpen }: Props) {
     const onScroll = () => { scrollOff.current = window.scrollY * SCROLL_F }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => { cancelAnimationFrame(rafId); window.removeEventListener('scroll', onScroll) }
-  }, [])
+  }, [mobile])
 
   useEffect(() => {
     const obs: IntersectionObserver[] = []
@@ -118,7 +137,8 @@ export default function GalleryGrid({ items, onOpen }: Props) {
     return () => obs.forEach(o => o.disconnect())
   }, [items.length])
 
-  const data = useMemo(() => buildData(phase), [phase])
+  const N_SPHERES = mobile ? N_SPHERES_MOBILE : N_SPHERES_DESKTOP
+  const data = useMemo(() => buildData(phase, N_SPHERES), [phase, N_SPHERES])
 
 
 
@@ -130,8 +150,8 @@ export default function GalleryGrid({ items, onOpen }: Props) {
         width={SVG_W} height={TOTAL_H} overflow="visible"
         style={{ position: 'absolute', left: '50%', top: 0, transform: 'translateX(-50%)', pointerEvents: 'none', zIndex: 0 }}
       >
-        {/* ── Étoiles clignotantes ── */}
-        {STARS.map((s, i) => (
+        {/* ── Étoiles clignotantes (desktop seulement) ── */}
+        {!mobile && STARS.map((s, i) => (
           <circle
             key={`star-${i}`}
             cx={s.x}
@@ -174,8 +194,8 @@ export default function GalleryGrid({ items, onOpen }: Props) {
           </filter>
         </defs>
 
-        {/* ── Halos ambiants (couche la plus basse) ── */}
-        {data.slice(0, -1).map((d, i) => {
+        {/* ── Halos ambiants — desktop seulement ── */}
+        {!mobile && data.slice(0, -1).map((d, i) => {
           const n = data[i + 1]
           return (
             <g key={`halo-${i}`}>
@@ -185,56 +205,53 @@ export default function GalleryGrid({ items, onOpen }: Props) {
           )
         })}
 
-        {/* ── Barreaux transversaux néon (orange) — rendus avant les brins ── */}
+        {/* ── Barreaux transversaux ── */}
         {data.map((d, i) => {
           const front = d.sinVal > 0
+          const glowFilter = mobile ? undefined : 'url(#glow-r)'
           return (
-            <g key={`rg-${i}`} opacity={front ? 1 : 0.3} filter="url(#glow-r)">
-              {/* Glow large */}
-              <line x1={d.xA} y1={d.y} x2={d.xB} y2={d.y} stroke={COLOR_R} strokeWidth="6" strokeLinecap="round" strokeOpacity="0.35"/>
-              {/* Core */}
+            <g key={`rg-${i}`} opacity={front ? 1 : 0.3} filter={glowFilter}>
+              {!mobile && <line x1={d.xA} y1={d.y} x2={d.xB} y2={d.y} stroke={COLOR_R} strokeWidth="6" strokeLinecap="round" strokeOpacity="0.35"/>}
               <line x1={d.xA} y1={d.y} x2={d.xB} y2={d.y} stroke={COLOR_R} strokeWidth="2" strokeLinecap="round"/>
-              {/* Reflet blanc centre */}
-              <line x1={(d.xA+d.xB)/2-8} y1={d.y} x2={(d.xA+d.xB)/2+8} y2={d.y} stroke="white" strokeWidth="0.8" strokeLinecap="round" strokeOpacity="0.6"/>
             </g>
           )
         })}
 
-        {/* ── Brin B (violet) — derrière ── */}
+        {/* ── Brin B (violet) ── */}
         {data.slice(0, -1).map((d, i) => {
           const n  = data[i + 1]
           const dB = -(d.sinVal + n.sinVal) / 2
           const op = dB > 0 ? 1 : 0.25
+          const glowFilter = mobile ? undefined : 'url(#glow-b)'
           return (
-            <g key={`bB-${i}`} opacity={op} filter="url(#glow-b)">
-              <line x1={d.xB} y1={d.y} x2={n.xB} y2={n.y} stroke={COLOR_B} strokeWidth="8"  strokeLinecap="round" strokeOpacity="0.3"/>
-              <line x1={d.xB} y1={d.y} x2={n.xB} y2={n.y} stroke={COLOR_B} strokeWidth="3"  strokeLinecap="round"/>
-              <line x1={d.xB} y1={d.y} x2={n.xB} y2={n.y} stroke="white"   strokeWidth="0.8" strokeLinecap="round" strokeOpacity="0.4"/>
+            <g key={`bB-${i}`} opacity={op} filter={glowFilter}>
+              {!mobile && <line x1={d.xB} y1={d.y} x2={n.xB} y2={n.y} stroke={COLOR_B} strokeWidth="8" strokeLinecap="round" strokeOpacity="0.3"/>}
+              <line x1={d.xB} y1={d.y} x2={n.xB} y2={n.y} stroke={COLOR_B} strokeWidth="3" strokeLinecap="round"/>
             </g>
           )
         })}
 
-        {/* ── Brin A (cyan) — devant ── */}
+        {/* ── Brin A (cyan) ── */}
         {data.slice(0, -1).map((d, i) => {
           const n  = data[i + 1]
           const dA = (d.sinVal + n.sinVal) / 2
           const op = dA > 0 ? 1 : 0.25
+          const glowFilter = mobile ? undefined : 'url(#glow-a)'
           return (
-            <g key={`bA-${i}`} opacity={op} filter="url(#glow-a)">
-              <line x1={d.xA} y1={d.y} x2={n.xA} y2={n.y} stroke={COLOR_A} strokeWidth="8"  strokeLinecap="round" strokeOpacity="0.3"/>
-              <line x1={d.xA} y1={d.y} x2={n.xA} y2={n.y} stroke={COLOR_A} strokeWidth="3"  strokeLinecap="round"/>
-              <line x1={d.xA} y1={d.y} x2={n.xA} y2={n.y} stroke="white"   strokeWidth="0.8" strokeLinecap="round" strokeOpacity="0.5"/>
+            <g key={`bA-${i}`} opacity={op} filter={glowFilter}>
+              {!mobile && <line x1={d.xA} y1={d.y} x2={n.xA} y2={n.y} stroke={COLOR_A} strokeWidth="8" strokeLinecap="round" strokeOpacity="0.3"/>}
+              <line x1={d.xA} y1={d.y} x2={n.xA} y2={n.y} stroke={COLOR_A} strokeWidth="3" strokeLinecap="round"/>
             </g>
           )
         })}
 
-        {/* ── Points lumineux aux nœuds ── */}
+        {/* ── Points aux nœuds ── */}
         {data.map((d, i) => (
-          <g key={`dot-${i}`} filter="url(#glow-dot)">
+          <g key={`dot-${i}`} filter={mobile ? undefined : 'url(#glow-dot)'}>
             <circle cx={d.xA} cy={d.y} r="5" fill={COLOR_A} opacity={d.sinVal > 0 ? 1 : 0.3}/>
-            <circle cx={d.xA} cy={d.y} r="2.5" fill="white"  opacity={d.sinVal > 0 ? 0.9 : 0.2}/>
+            {!mobile && <circle cx={d.xA} cy={d.y} r="2.5" fill="white" opacity={d.sinVal > 0 ? 0.9 : 0.2}/>}
             <circle cx={d.xB} cy={d.y} r="5" fill={COLOR_B} opacity={d.sinVal <= 0 ? 1 : 0.3}/>
-            <circle cx={d.xB} cy={d.y} r="2.5" fill="white"  opacity={d.sinVal <= 0 ? 0.9 : 0.2}/>
+            {!mobile && <circle cx={d.xB} cy={d.y} r="2.5" fill="white" opacity={d.sinVal <= 0 ? 0.9 : 0.2}/>}
           </g>
         ))}
 
@@ -281,7 +298,7 @@ export default function GalleryGrid({ items, onOpen }: Props) {
               transform: !entered
                 ? `translateX(${isLeft ? -50 : 50}px) scale(0.9)`
                 : isHov ? 'scale(1.85)' : undefined,
-              animation: entered && !isHov
+              animation: entered && !isHov && !mobile
                 ? `levitate ${3.5 + (i % 5) * 0.35}s ease-in-out ${i * 0.25}s infinite`
                 : 'none',
               transition: !entered
