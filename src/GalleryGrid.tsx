@@ -18,16 +18,17 @@ const TURNS      = 4.5
 const SCROLL_F   = 0.002
 const AUTO_SPEED = 0.004   // desktop seulement
 
-const CARD_W     = 560
-const CARD_H     = 400
+const CARD_W        = 560
+const CARD_H        = 400
+const CARD_W_MOBILE = undefined        // 100% via CSS
+const CARD_H_MOBILE = 220
 
-// Distance horizontale depuis le bord (alternée)
-// pattern par index : far-left, close-right, close-left, far-right, far-left, close-right...
+// Distance horizontale depuis le bord (alternée) — desktop seulement
 const H_POSITIONS = [
-  { side: 'left',  left: '2%',                          right: undefined },         // 0 far-left
-  { side: 'right', left: undefined,                     right: '2%'      },         // 1 far-right
-  { side: 'left',  left: '18%',                         right: undefined },         // 2 close-left
-  { side: 'right', left: undefined,                     right: '18%'     },         // 3 close-right
+  { side: 'left',  left: '2%',        right: undefined },   // 0 far-left
+  { side: 'right', left: undefined,   right: '2%'      },   // 1 far-right
+  { side: 'left',  left: '18%',       right: undefined },   // 2 close-left
+  { side: 'right', left: undefined,   right: '18%'     },   // 3 close-right
 ] as const
 
 
@@ -273,9 +274,10 @@ export default function GalleryGrid({ items, onOpen }: Props) {
       {/* ── Cartes images alternées ── */}
       {items.map((item, i) => {
         const pos     = H_POSITIONS[i % 4]
-        const isLeft  = pos.side === 'left'
+        const isLeft  = mobile ? true : pos.side === 'left'
+        const cardH   = mobile ? CARD_H_MOBILE : CARD_H
         const y       = imageY(i)
-        const top     = y - CARD_H / 2
+        const top     = y - cardH / 2
         const color   = cardColor(i)
         const isHov   = hoveredIdx === i
         const entered = visible[i]
@@ -290,10 +292,10 @@ export default function GalleryGrid({ items, onOpen }: Props) {
             style={{
               position: 'absolute',
               top,
-              left:  pos.left,
-              right: pos.right,
-              width:  CARD_W,
-              height: CARD_H,
+              left:   mobile ? '12px' : pos.left,
+              right:  mobile ? '12px' : pos.right,
+              width:  mobile ? CARD_W_MOBILE : CARD_W,
+              height: cardH,
               opacity: entered ? 1 : 0,
               transform: !entered
                 ? `translateX(${isLeft ? -50 : 50}px) scale(0.9)`
