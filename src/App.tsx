@@ -126,7 +126,6 @@ export default function App() {
                 </span>
               </h1>
             </div>
-
           </div>
 
           <button
