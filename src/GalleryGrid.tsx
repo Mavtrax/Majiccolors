@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from 'react'
 
 // ─── Détection mobile ──────────────────────────────────────────────────────────
-const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 768
+const isMobile = () => typeof window !== 'undefined' && Math.min(window.innerWidth, window.innerHeight) < 768
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 const N_ITEMS    = 9

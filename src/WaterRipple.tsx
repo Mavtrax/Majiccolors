@@ -5,10 +5,16 @@ import { useEffect, useRef } from 'react'
  * Le canvas tourne à 1/3 de la résolution écran pour la perf,
  * puis est upscalé en CSS (interpolation bilinéaire = rendu doux).
  */
+const isTouchDevice = () =>
+  typeof window !== 'undefined' &&
+  (navigator.maxTouchPoints > 0 || 'ontouchstart' in window)
+
 export default function WaterRipple() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const isTouch = isTouchDevice()
 
   useEffect(() => {
+    if (isTouch) return
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')!
@@ -111,7 +117,9 @@ export default function WaterRipple() {
       window.removeEventListener('resize', resize)
       window.removeEventListener('mousemove', onMove)
     }
-  }, [])
+  }, [isTouch])
+
+  if (isTouch) return null
 
   return (
     <canvas

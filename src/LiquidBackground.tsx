@@ -16,8 +16,10 @@ export default function LiquidBackground() {
     resize()
     window.addEventListener('resize', resize)
 
+    const isTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window
+
     // Blobs config — trajectoires Lissajous pour fluidité maximale
-    const blobs = [
+    const allBlobs = [
       { cx: 0.35, cy: 0.4,  r: 0.38, color: '#ff6b00', ax: 0.28, ay: 0.22, fx: 0.07,  fy: 0.05,  phase: 0    },
       { cx: 0.65, cy: 0.55, r: 0.34, color: '#00d4ff', ax: 0.25, ay: 0.28, fx: 0.05,  fy: 0.08,  phase: 1.2  },
       { cx: 0.5,  cy: 0.25, r: 0.30, color: '#ff2d78', ax: 0.22, ay: 0.20, fx: 0.09,  fy: 0.06,  phase: 2.4  },
@@ -26,6 +28,7 @@ export default function LiquidBackground() {
       { cx: 0.55, cy: 0.7,  r: 0.32, color: '#1e90ff', ax: 0.26, ay: 0.20, fx: 0.055, fy: 0.075, phase: 0.8  },
       { cx: 0.2,  cy: 0.45, r: 0.27, color: '#39ff14', ax: 0.22, ay: 0.26, fx: 0.075, fy: 0.055, phase: 2.0  },
     ]
+    const blobs = isTouch ? allBlobs.slice(0, 3) : allBlobs
 
     let animId: number
     let t = 0
