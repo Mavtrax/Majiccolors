@@ -1,8 +1,10 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { X, Instagram, MessageCircle, ChevronDown, ChevronLeft, ChevronRight, Brush, PartyPopper, Palette } from 'lucide-react'
 import LiquidBackground from './LiquidBackground'
 import GalleryGrid from './GalleryGrid'
-import WaterRipple from './WaterRipple'
+import GraffitiLayer from './GraffitiLayer'
+import SprayCursor from './SprayCursor'
+import PaintDrip from './PaintDrip'
 import './index.css'
 
 const CONFIG = {
@@ -47,9 +49,23 @@ export default function App() {
   const [current, setCurrent] = useState(0)
   const [fullscreen, setFullscreen] = useState(false)
 
-  // Parallax hero
   const heroRef = useRef<HTMLElement>(null)
   const [mouse, setMouse] = useState({ x: 0, y: 0 })
+
+  // Parallax scroll — éléments mis en cache au mount pour éviter querySelectorAll à chaque scroll
+  useEffect(() => {
+    const els = Array.from(document.querySelectorAll<HTMLElement>('[data-parallax]'))
+    const speeds = els.map(el => parseFloat(el.dataset.parallax || '0.2'))
+
+    const onScroll = () => {
+      const y = window.scrollY
+      els.forEach((el, i) => {
+        el.style.transform = `translateY(${y * speeds[i]}px)`
+      })
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   const handleHeroMouse = (e: React.MouseEvent) => {
     const r = heroRef.current!.getBoundingClientRect()
@@ -68,7 +84,6 @@ export default function App() {
 
   const openGallery = (i: number) => { setCurrent(i); setFullscreen(true) }
 
-  // Parallax style helpers — chaque couche à profondeur différente
   const px = (strength: number) => ({
     transform: `translate(${mouse.x * strength}px, ${mouse.y * strength * 0.65}px)`,
     transition: 'transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
@@ -83,8 +98,11 @@ export default function App() {
         <LiquidBackground />
       </div>
 
-      {/* Water ripple */}
-      <WaterRipple />
+      {/* Graffiti layer */}
+      <GraffitiLayer />
+
+      {/* Spray cursor */}
+      <SprayCursor />
 
       {/* Grain texture */}
       <div className="grain" aria-hidden="true" />
@@ -100,13 +118,13 @@ export default function App() {
           onMouseLeave={() => setMouse({ x: 0, y: 0 })}
         >
           <div className="relative z-10 max-w-3xl">
-            {/* Couche 2 — titre, bouge le plus */}
             <div style={px(40)}>
               <h1
                 className="leading-none text-white mb-4 whitespace-nowrap"
                 style={{ perspective: '900px', fontFamily: "'Ruwudu', serif", fontWeight: 700, fontSize: 'clamp(2.5rem, 13vw, 16rem)' }}
               >
-                <span className="hero-title-float">
+                {/* Spray reveal sur le titre entier */}
+                <span className="hero-title-float hero-spray-reveal">
                   {['M', 'A', 'J'].map((l, i) => (
                     <span
                       key={l}
@@ -116,7 +134,6 @@ export default function App() {
                       {l}
                     </span>
                   ))}
-                  {/* IC — couleurs cycliques */}
                   <span
                     className="hero-letter ic-text"
                     style={{ animationDelay: '0.36s', paddingTop: '0.15em', paddingBottom: '0.05em' }}
@@ -137,8 +154,16 @@ export default function App() {
           </button>
         </section>
 
+        {/* Drip hero → galerie */}
+        <PaintDrip sectionId="galerie" />
+
         {/* GALERIE — GRILLE 3D */}
         <section id="galerie" className="relative py-24 px-5" style={{ overflowX: 'clip' }}>
+          {/* Parallax background text */}
+          <div className="parallax-bg-text" aria-hidden="true">
+            <span data-parallax="0.12">GRAFFITI</span>
+          </div>
+
           <div className="relative z-10">
             <div className="text-center mb-16">
               <p className="text-xs tracking-[0.4em] uppercase text-spray-cyan mb-3">Réalisations</p>
@@ -189,9 +214,17 @@ export default function App() {
           </div>
         </section>
 
+        {/* Drip galerie → services */}
+        <PaintDrip sectionId="services" />
+
         {/* SERVICES */}
-        <section id="services" className="py-24 px-5 bg-black/60">
-          <div className="max-w-5xl mx-auto">
+        <section id="services" className="relative py-24 px-5 bg-black/60">
+          {/* Parallax background text */}
+          <div className="parallax-bg-text" aria-hidden="true">
+            <span data-parallax="0.18">STREET ART</span>
+          </div>
+
+          <div className="max-w-5xl mx-auto relative z-10">
             <div className="text-center mb-16">
               <p className="text-xs tracking-[0.4em] uppercase text-spray-orange mb-3">Ce que je fais</p>
               <h2 className="font-display text-5xl md:text-6xl text-white tracking-wider">SERVICES</h2>
@@ -215,8 +248,13 @@ export default function App() {
         </section>
 
         {/* CONTACT */}
-        <section id="contact" className="py-24 px-5 bg-black/60">
-          <div className="max-w-3xl mx-auto">
+        <section id="contact" className="relative py-24 px-5 bg-black/60">
+          {/* Parallax background text */}
+          <div className="parallax-bg-text" aria-hidden="true">
+            <span data-parallax="0.1">COLORS</span>
+          </div>
+
+          <div className="max-w-3xl mx-auto relative z-10">
             <div className="text-center mb-12">
               <p className="text-xs tracking-[0.4em] uppercase text-spray-pink mb-3">Restons en contact</p>
               <h2 className="font-display text-5xl md:text-6xl text-white tracking-wider">CONTACT</h2>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Ruwudu:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Ruwudu:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -199,4 +199,100 @@ body {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ─── Graffiti Layer ── */
+.graffiti-path,
+.graffiti-text {
+  opacity: 0;
+}
+
+.graffiti-path.graffiti-drawn {
+  stroke-dashoffset: 0 !important;
+  opacity: 0.12;
+  transition: stroke-dashoffset 1.6s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.8s ease;
+}
+
+.graffiti-text.graffiti-drawn {
+  stroke-dashoffset: 0 !important;
+  opacity: 0.10;
+  transition: stroke-dashoffset 1.6s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.8s ease;
+}
+
+/* Effacement — le trait se rétracte */
+.graffiti-path.graffiti-drawn.graffiti-erase {
+  stroke-dashoffset: var(--path-len) !important;
+  opacity: 0 !important;
+  transition: stroke-dashoffset 1.2s ease-in,
+              opacity 0.6s ease 0.5s;
+}
+
+.graffiti-text.graffiti-drawn.graffiti-erase {
+  stroke-dashoffset: 3000 !important;
+  opacity: 0 !important;
+  transition: stroke-dashoffset 1.2s ease-in,
+              opacity 0.6s ease 0.5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .graffiti-path,
+  .graffiti-text {
+    transition: opacity 0.3s ease !important;
+  }
+}
+
+/* ─── Hero spray reveal ── */
+@keyframes spray-wipe {
+  0%   { clip-path: inset(0 100% 0 0); filter: blur(12px) brightness(2.5); }
+  60%  { filter: blur(2px) brightness(1.2); }
+  100% { clip-path: inset(0 0% 0 0);   filter: blur(0) brightness(1); }
+}
+
+.hero-spray-reveal {
+  animation: spray-wipe 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Paint drips ── */
+@keyframes drip-fall {
+  0%   { transform: scaleY(0); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 0.7; }
+  100% { transform: scaleY(1); opacity: 0; }
+}
+
+.drip-container .drip {
+  position: absolute;
+  width: 7px;
+  border-radius: 0 0 50% 50%;
+  transform-origin: top center;
+  transform: scaleY(0);
+  opacity: 0;
+}
+
+.drip-container.drips-active .drip {
+  animation: drip-fall 1.8s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+/* ─── Parallax background text ── */
+.parallax-bg-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+.parallax-bg-text span {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(6rem, 20vw, 22rem);
+  color: rgba(255,255,255,0.025);
+  letter-spacing: 0.15em;
+  white-space: nowrap;
+  will-change: transform;
 }

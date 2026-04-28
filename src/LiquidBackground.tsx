@@ -18,7 +18,6 @@ export default function LiquidBackground() {
 
     const isTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window
 
-    // Blobs config — trajectoires Lissajous pour fluidité maximale
     const allBlobs = [
       { cx: 0.35, cy: 0.4,  r: 0.38, color: '#ff6b00', ax: 0.28, ay: 0.22, fx: 0.07,  fy: 0.05,  phase: 0    },
       { cx: 0.65, cy: 0.55, r: 0.34, color: '#00d4ff', ax: 0.25, ay: 0.28, fx: 0.05,  fy: 0.08,  phase: 1.2  },
@@ -32,25 +31,36 @@ export default function LiquidBackground() {
 
     let animId: number
     let t = 0
+    let frameCount = 0
+    let paused = false
+
+    // Pause quand l'onglet est caché
+    const onVisibility = () => { paused = document.hidden }
+    document.addEventListener('visibilitychange', onVisibility)
 
     const draw = () => {
+      animId = requestAnimationFrame(draw)
+      if (paused) return
+
+      // 30fps — on saute 1 frame sur 2
+      frameCount++
+      if (frameCount % 2 !== 0) return
+
       const w = canvas.width
       const h = canvas.height
 
       ctx.clearRect(0, 0, w, h)
 
       blobs.forEach(b => {
-        // Trajectoire Lissajous : combinaison de 2 sinus pour mouvement organique
         const x = (b.cx + Math.sin(t * b.fx + b.phase) * b.ax + Math.sin(t * b.fx * 1.7 + b.phase + 1) * b.ax * 0.3) * w
         const y = (b.cy + Math.cos(t * b.fy + b.phase) * b.ay + Math.cos(t * b.fy * 2.1 + b.phase + 2) * b.ay * 0.25) * h
-        // Taille qui respire légèrement
         const r = (b.r + Math.sin(t * 0.04 + b.phase) * 0.04) * Math.min(w, h)
 
         const grad = ctx.createRadialGradient(x, y, 0, x, y, r)
-        grad.addColorStop(0,   b.color + 'dd')
-        grad.addColorStop(0.4, b.color + '88')
+        grad.addColorStop(0,    b.color + 'dd')
+        grad.addColorStop(0.4,  b.color + '88')
         grad.addColorStop(0.75, b.color + '33')
-        grad.addColorStop(1,   b.color + '00')
+        grad.addColorStop(1,    b.color + '00')
 
         ctx.beginPath()
         ctx.arc(x, y, r, 0, Math.PI * 2)
@@ -59,7 +69,6 @@ export default function LiquidBackground() {
       })
 
       t += 0.036
-      animId = requestAnimationFrame(draw)
     }
 
     draw()
@@ -67,6 +76,7 @@ export default function LiquidBackground() {
     return () => {
       cancelAnimationFrame(animId)
       window.removeEventListener('resize', resize)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [])
 
