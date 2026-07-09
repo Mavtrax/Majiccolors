@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronDown, ArrowRight, ArrowUpRight } from 'lucide-react'
 import PaintDrip from '../PaintDrip'
+import VideoBlock from '../components/VideoBlock'
 
 // Chargé à part : three.js ne bloque pas le rendu initial
 const Hero3D = lazy(() => import('../components/Hero3D'))
@@ -159,6 +160,17 @@ export default function HomePage() {
             <span className="text-spray-pink">flore</span>, tout en restant profondément ancré dans la{' '}
             <span className="text-spray-purple">pop culture</span> et l'art urbain.
           </p>
+        </div>
+      </section>
+
+      <PaintDrip sectionId="video" />
+
+      {/* VIDÉO DU DUO */}
+      <section id="video" className="relative py-24 px-5">
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <p className="text-xs tracking-[0.4em] uppercase text-spray-cyan mb-3">Le crew en action</p>
+          <h2 className="font-display text-5xl md:text-6xl text-white tracking-wider mb-12">EN ACTION</h2>
+          <VideoBlock src={CREW.video} label="Le duo en action" />
         </div>
       </section>
 

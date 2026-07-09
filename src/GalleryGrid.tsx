@@ -12,23 +12,20 @@ const TOTAL_H    = PAD_TOP + N_ITEMS * V_STEP + 100
 const SVG_W      = 480
 const CX         = SVG_W / 2
 const AMPLITUDE  = 300
-const N_SPHERES_DESKTOP = 52
+const N_SPHERES_DESKTOP = 36
 const N_SPHERES_MOBILE  = 18
 const TURNS      = 4.5
 const SCROLL_F   = 0.002
-const AUTO_SPEED = 0.004   // desktop seulement
 
 const CARD_W        = 560
 const CARD_H        = 400
 const CARD_W_MOBILE = undefined        // 100% via CSS
 const CARD_H_MOBILE = 220
 
-// Distance horizontale depuis le bord (alternée) — desktop seulement
+// Alternance simple gauche / droite à distance constante — desktop seulement
 const H_POSITIONS = [
-  { side: 'left',  left: '2%',        right: undefined },   // 0 far-left
-  { side: 'right', left: undefined,   right: '2%'      },   // 1 far-right
-  { side: 'left',  left: '18%',       right: undefined },   // 2 close-left
-  { side: 'right', left: undefined,   right: '18%'     },   // 3 close-right
+  { side: 'left',  left: '5%',      right: undefined },   // pair  → gauche
+  { side: 'right', left: undefined, right: '5%'      },   // impair → droite
 ] as const
 
 
@@ -43,7 +40,7 @@ const STAR_COLORS = ['#A855F7', '#F97316', '#EAB308', '#22C55E']
 // Le SVG est centré (CX = 240). Pour couvrir ~1600px de large :
 // x va de -800 à +1040 (soit CX ± 900px environ)
 const STAR_SPREAD = 900   // px de chaque côté du centre SVG
-const STARS = Array.from({ length: 55 }, (_, i) => {
+const STARS = Array.from({ length: 26 }, (_, i) => {
   const a = i * 137.508
   const b = i * 97.3 + 13.7
   return {
@@ -96,8 +93,6 @@ export default function GalleryGrid({ items, onOpen }: Props) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
   const [mobile,     setMobile    ] = useState(false)
   const cardRefs  = useRef<(HTMLDivElement | null)[]>([])
-  const autoPhase = useRef(0)
-  const scrollOff = useRef(0)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -114,9 +109,9 @@ export default function GalleryGrid({ items, onOpen }: Props) {
       window.addEventListener('scroll', onScroll, { passive: true })
       return () => window.removeEventListener('scroll', onScroll)
     }
-    // Desktop : rotation auto + scroll — mais seulement quand la galerie
-    // est visible et l'onglet actif (sinon on sature le thread principal
-    // et les clics sur la nav sont avalés).
+    // Desktop : l'hélice suit le SCROLL (plus de rotation auto).
+    // → à l'arrêt, aucun re-render : le SVG (avec ses filtres de flou)
+    //   n'est jamais redessiné tant qu'on ne scrolle pas.
     let isVisible = true
     let io: IntersectionObserver | undefined
     if (containerRef.current) {
@@ -127,30 +122,21 @@ export default function GalleryGrid({ items, onOpen }: Props) {
       io.observe(containerRef.current)
     }
 
-    let paused = document.hidden
-    const onVisibility = () => { paused = document.hidden }
-    document.addEventListener('visibilitychange', onVisibility)
-
-    let rafId: number
-    let frame = 0
-    const loop = () => {
-      rafId = requestAnimationFrame(loop)
-      if (!isVisible || paused) return
-      // ~30fps : on saute 1 frame sur 2 (× vitesse pour compenser)
-      frame++
-      if (frame % 2 !== 0) return
-      autoPhase.current += AUTO_SPEED * 2
-      setPhase(autoPhase.current + scrollOff.current)
+    let ticking = false
+    const onScroll = () => {
+      if (ticking || !isVisible) return
+      ticking = true
+      requestAnimationFrame(() => {
+        setPhase(window.scrollY * SCROLL_F)
+        ticking = false
+      })
     }
-    rafId = requestAnimationFrame(loop)
-
-    const onScroll = () => { scrollOff.current = window.scrollY * SCROLL_F }
     window.addEventListener('scroll', onScroll, { passive: true })
+    setPhase(window.scrollY * SCROLL_F) // position initiale
+
     return () => {
-      cancelAnimationFrame(rafId)
       window.removeEventListener('scroll', onScroll)
       io?.disconnect()
-      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [mobile])
 
@@ -288,7 +274,7 @@ export default function GalleryGrid({ items, onOpen }: Props) {
         {Array.from({ length: N_ITEMS }, (_, i) => {
           const y     = imageY(i)
           const color = SPHERE_COLORS[i % 3]
-          const pos   = H_POSITIONS[i % 4]
+          const pos   = H_POSITIONS[i % 2]
           const x2    = pos.side === 'left' ? -700 : SVG_W + 700
           return (
             <line key={`conn-${i}`}
@@ -301,7 +287,7 @@ export default function GalleryGrid({ items, onOpen }: Props) {
 
       {/* ── Cartes images alternées ── */}
       {items.map((item, i) => {
-        const pos     = H_POSITIONS[i % 4]
+        const pos     = H_POSITIONS[i % 2]
         const isLeft  = mobile ? true : pos.side === 'left'
         const cardH   = mobile ? CARD_H_MOBILE : CARD_H
         const y       = imageY(i)

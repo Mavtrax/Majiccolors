@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Instagram, ChevronDown, ArrowRight } from 'lucide-react'
 import GalleryGrid from '../GalleryGrid'
 import GalleryModal from '../components/GalleryModal'
+import VideoBlock from '../components/VideoBlock'
 import PaintDrip from '../PaintDrip'
 import { ARTISTS, type ArtistSlug } from '../data/artists'
 import { SERVICES } from '../data/services'
@@ -34,16 +35,16 @@ export default function ArtistPage({ slug }: Props) {
       {/* HERO */}
       <section
         aria-label={`Présentation de ${artist.name}`}
-        className="relative min-h-[70vh] flex flex-col items-center justify-center text-center px-5 overflow-x-hidden"
+        className="relative min-h-[85vh] flex flex-col items-center justify-center text-center px-5 pt-24 pb-20 overflow-x-hidden"
       >
-        <div className="relative z-10 max-w-4xl">
+        <div className="relative z-10 w-full max-w-4xl">
           <h1
-            className="mb-6 whitespace-nowrap"
+            className="mb-8 whitespace-nowrap"
             style={{
               fontFamily: "'Ruwudu', serif",
               fontWeight: 700,
-              fontSize: 'clamp(2.75rem, 14vw, 11rem)',
-              lineHeight: 1.12,
+              fontSize: 'clamp(2.25rem, 9vw, 6rem)',
+              lineHeight: 1.1,
               color: artist.accent,
             }}
           >
@@ -55,6 +56,9 @@ export default function ArtistPage({ slug }: Props) {
               ))}
             </span>
           </h1>
+
+          {/* Bloc vidéo de présentation */}
+          <VideoBlock src={artist.video} label="Présentation" accent={artist.accent} />
         </div>
 
         <button

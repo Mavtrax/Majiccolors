@@ -33,4 +33,6 @@ export const CREW = {
   instagram: 'https://www.instagram.com/majiccolors',
   instagramHandle: '@majiccolors',
   zone: 'Pyrénées-Atlantiques',
+  // TODO: '/videos/crew.mp4' quand la vidéo du duo sera prête
+  video: '',
 }

@@ -19,6 +19,8 @@ export interface Artist {
   /** Couleur d'accent dominante (hex, tokens spray.*) */
   accent: string
   accentSoft: string
+  /** Vidéo de présentation (ex: '/videos/majic.mp4'). Vide → placeholder. */
+  video: string
   gallery: GalleryItem[]
 }
 
@@ -54,6 +56,7 @@ export const ARTISTS: Record<ArtistSlug, Artist> = {
     instagramHandle: '@majiccolors',
     accent: '#00d4ff', // spray.cyan
     accentSoft: '#00d4ff',
+    video: '', // TODO: '/videos/majic.mp4' quand la vidéo sera prête
     gallery: MAJIC_GALLERY,
   },
   mavros: {
@@ -70,6 +73,7 @@ export const ARTISTS: Record<ArtistSlug, Artist> = {
     instagramHandle: '@mavros',
     accent: '#b44fff', // spray.purple
     accentSoft: '#ff2d78', // spray.pink
+    video: '', // TODO: '/videos/mavros.mp4' quand la vidéo sera prête
     gallery: MAVROS_GALLERY,
   },
 }
