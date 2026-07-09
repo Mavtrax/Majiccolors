@@ -162,6 +162,8 @@ export default function Hero3D() {
         dpr={[1, 1.5]}
         camera={{ position: [0, 0, 9], fov: 42 }}
         gl={{ antialias: true, alpha: true }}
+        // Laisse le scroll vertical tactile passer (sinon le canvas bloque le défilement mobile)
+        style={{ touchAction: 'pan-y' }}
       >
         <ambientLight intensity={0.85} />
         <directionalLight position={[0, 3, 6]} intensity={0.6} color="#ffffff" />
