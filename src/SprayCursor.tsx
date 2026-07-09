@@ -35,9 +35,47 @@ export default function SprayCursor() {
     let colorIdx = 0
     let moveCount = 0
     let paused = false
+    let rafId = 0
+    let running = false
+
+    const tick = () => {
+      if (paused) { running = false; return }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i]
+        p.x += p.vx
+        p.y += p.vy
+        p.vy += 0.06
+        p.vx *= 0.98
+        p.alpha -= p.decay
+
+        if (p.alpha <= 0) { particles.splice(i, 1); continue }
+
+        const hex = Math.floor(p.alpha * 255).toString(16).padStart(2, '0')
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+        ctx.fillStyle = p.color + hex
+        ctx.fill()
+      }
+
+      // Plus de particules → on arrête la boucle (repart au prochain mouvement)
+      if (particles.length === 0) { running = false; return }
+      rafId = requestAnimationFrame(tick)
+    }
+
+    const startLoop = () => {
+      if (running || paused) return
+      running = true
+      rafId = requestAnimationFrame(tick)
+    }
 
     // Pause quand l'onglet est caché
-    const onVisibility = () => { paused = document.hidden }
+    const onVisibility = () => {
+      paused = document.hidden
+      if (!paused && particles.length > 0) startLoop()
+    }
     document.addEventListener('visibilitychange', onVisibility)
 
     const onMove = (e: MouseEvent) => {
@@ -63,35 +101,9 @@ export default function SprayCursor() {
           decay: 0.025 + Math.random() * 0.02,
         })
       }
+      startLoop()
     }
     window.addEventListener('mousemove', onMove)
-
-    let rafId: number
-    const tick = () => {
-      if (!paused) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-        for (let i = particles.length - 1; i >= 0; i--) {
-          const p = particles[i]
-          p.x += p.vx
-          p.y += p.vy
-          p.vy += 0.06
-          p.vx *= 0.98
-          p.alpha -= p.decay
-
-          if (p.alpha <= 0) { particles.splice(i, 1); continue }
-
-          const hex = Math.floor(p.alpha * 255).toString(16).padStart(2, '0')
-          ctx.beginPath()
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-          ctx.fillStyle = p.color + hex
-          ctx.fill()
-        }
-      }
-
-      rafId = requestAnimationFrame(tick)
-    }
-    tick()
 
     return () => {
       cancelAnimationFrame(rafId)

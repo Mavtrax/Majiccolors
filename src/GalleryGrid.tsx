@@ -98,6 +98,7 @@ export default function GalleryGrid({ items, onOpen }: Props) {
   const cardRefs  = useRef<(HTMLDivElement | null)[]>([])
   const autoPhase = useRef(0)
   const scrollOff = useRef(0)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const check = () => setMobile(isMobile())
@@ -113,17 +114,44 @@ export default function GalleryGrid({ items, onOpen }: Props) {
       window.addEventListener('scroll', onScroll, { passive: true })
       return () => window.removeEventListener('scroll', onScroll)
     }
-    // Desktop : rotation auto + scroll
+    // Desktop : rotation auto + scroll — mais seulement quand la galerie
+    // est visible et l'onglet actif (sinon on sature le thread principal
+    // et les clics sur la nav sont avalés).
+    let isVisible = true
+    let io: IntersectionObserver | undefined
+    if (containerRef.current) {
+      io = new IntersectionObserver(
+        ([e]) => { isVisible = e.isIntersecting },
+        { threshold: 0 }
+      )
+      io.observe(containerRef.current)
+    }
+
+    let paused = document.hidden
+    const onVisibility = () => { paused = document.hidden }
+    document.addEventListener('visibilitychange', onVisibility)
+
     let rafId: number
+    let frame = 0
     const loop = () => {
-      autoPhase.current += AUTO_SPEED
-      setPhase(autoPhase.current + scrollOff.current)
       rafId = requestAnimationFrame(loop)
+      if (!isVisible || paused) return
+      // ~30fps : on saute 1 frame sur 2 (× vitesse pour compenser)
+      frame++
+      if (frame % 2 !== 0) return
+      autoPhase.current += AUTO_SPEED * 2
+      setPhase(autoPhase.current + scrollOff.current)
     }
     rafId = requestAnimationFrame(loop)
+
     const onScroll = () => { scrollOff.current = window.scrollY * SCROLL_F }
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => { cancelAnimationFrame(rafId); window.removeEventListener('scroll', onScroll) }
+    return () => {
+      cancelAnimationFrame(rafId)
+      window.removeEventListener('scroll', onScroll)
+      io?.disconnect()
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
   }, [mobile])
 
   useEffect(() => {
@@ -144,7 +172,7 @@ export default function GalleryGrid({ items, onOpen }: Props) {
 
 
   return (
-    <div className="relative" style={{ height: TOTAL_H, width: '100%' }}>
+    <div ref={containerRef} className="relative" style={{ height: TOTAL_H, width: '100%' }}>
 
       {/* ── SVG hélice ── */}
       <svg

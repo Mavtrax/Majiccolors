@@ -16,6 +16,30 @@
 
 html {
   scroll-behavior: smooth;
+  /* Réserve la place de la scrollbar → plus de décalage quand elle apparaît/disparaît */
+  scrollbar-gutter: stable;
+  /* Firefox : scrollbar fine et sombre */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+/* WebKit (Chrome/Edge/Safari) : scrollbar discrète, dans le thème */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
+  background-clip: padding-box;
 }
 
 body {

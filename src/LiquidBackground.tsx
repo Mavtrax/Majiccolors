@@ -9,9 +9,12 @@ export default function LiquidBackground() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    // Rendu à demi-résolution : le canvas est flouté à 45px de toute façon,
+    // donc invisible à l'œil, mais 4× moins de pixels à remplir par frame.
+    const SCALE = 0.5
     const resize = () => {
-      canvas.width = canvas.offsetWidth
-      canvas.height = canvas.offsetHeight
+      canvas.width = Math.max(1, Math.round(canvas.offsetWidth * SCALE))
+      canvas.height = Math.max(1, Math.round(canvas.offsetHeight * SCALE))
     }
     resize()
     window.addEventListener('resize', resize)
