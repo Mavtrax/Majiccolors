@@ -5,7 +5,7 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import { TextureLoader, SRGBColorSpace, Vector3 } from 'three'
 import type { Group, Mesh } from 'three'
 
-const FONT = '/fonts/permanentmarker.typeface.json'
+const FONT = '/fonts/titanone.typeface.json'
 
 const LETTERS = ['M', 'A', 'T', 'W', 'O']
 
@@ -43,14 +43,11 @@ function Letter({ char, tag, meshRef }: LetterProps) {
       bevelSegments={3}
     >
       {char}
-      {/* material-0 = face : le tag */}
+      {/* material-0 = face : le tag (mat, couleurs franches, pas d'auto-glow) */}
       <meshStandardMaterial
         attach="material-0"
         map={tex}
-        emissiveMap={tex}
-        emissive="#ffffff"
-        emissiveIntensity={0.9}
-        roughness={0.45}
+        roughness={0.8}
         metalness={0}
         toneMapped={false}
       />
@@ -166,16 +163,15 @@ export default function Hero3D() {
         camera={{ position: [0, 0, 9], fov: 42 }}
         gl={{ antialias: true, alpha: true }}
       >
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[0, 3, 6]} intensity={1.1} color="#ffffff" />
-        <pointLight position={[-6, 4, 4]} intensity={40} color="#ffffff" />
+        <ambientLight intensity={0.85} />
+        <directionalLight position={[0, 3, 6]} intensity={0.6} color="#ffffff" />
 
         {/* Reflets pour le chrome (procédural, aucun fichier externe) */}
         <Environment resolution={128} frames={1}>
-          <Lightformer intensity={2.4} position={[0, 2, 4]} scale={[7, 3, 1]} color="#ffffff" />
-          <Lightformer intensity={2} position={[-5, 1, 2]} scale={[3, 4, 1]} color="#00d4ff" />
-          <Lightformer intensity={2} position={[5, -1, 2]} scale={[3, 4, 1]} color="#ff2d78" />
-          <Lightformer intensity={1.4} position={[0, -3, 2]} scale={[7, 2, 1]} color="#ff6b00" />
+          <Lightformer intensity={1.4} position={[0, 2, 4]} scale={[7, 3, 1]} color="#ffffff" />
+          <Lightformer intensity={1.6} position={[-5, 1, 2]} scale={[3, 4, 1]} color="#00d4ff" />
+          <Lightformer intensity={1.6} position={[5, -1, 2]} scale={[3, 4, 1]} color="#ff2d78" />
+          <Lightformer intensity={1.1} position={[0, -3, 2]} scale={[7, 2, 1]} color="#ff6b00" />
         </Environment>
 
         <Suspense fallback={null}>
@@ -193,9 +189,9 @@ export default function Hero3D() {
         {/* Halo néon */}
         <EffectComposer>
           <Bloom
-            intensity={1.0}
-            luminanceThreshold={0.6}
-            luminanceSmoothing={0.5}
+            intensity={0.6}
+            luminanceThreshold={0.85}
+            luminanceSmoothing={0.4}
             radius={0.5}
             mipmapBlur
           />
